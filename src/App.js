@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
-import SecretMessagesABI from './SecretMessagesABI.json'; // Import ABI
+import SecretMessagesABI from './ManifestMessagesABI.json'; // Import ABI
 // import { JsonRpcProvider } from 'ethers';
 import { Alchemy, Network } from "alchemy-sdk";
 import BN from 'bn.js';
@@ -30,7 +30,7 @@ function App() {
         const accounts = await web3.eth.getAccounts();
         setAccount(accounts[0]);
 
-        const contractAddress = '0x81312f88cbdb60b9ce5a118e917282d39ac24d65';
+        const contractAddress = '0x44de406be049cc036bac180400d76502e5c6e0a5';
         const contract = new web3.eth.Contract(SecretMessagesABI, contractAddress);
         setContract(contract);
 
@@ -92,7 +92,7 @@ function App() {
 
   return (
     <div className="flex flex-col items-center p-6 bg-gray-50 rounded-lg shadow-md max-w-5xl mx-auto mt-32">
-      <h1 className="text-3xl font-bold text-blue-600 mb-4">Secret Messaging DApp</h1>
+      <h1 className="text-3xl font-bold text-blue-600 mb-4">Manifest your thoughts!</h1>
       <p className="text-gray-700 mb-4">Connected account: <strong>{account}</strong></p>
 
       <ul className="w-full space-y-2 mb-4">
@@ -113,7 +113,7 @@ function App() {
             estimateGasFee(); // Estimate gas fee whenever the message changes
           }}
           className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type your secret message..."
+          placeholder="Type your manifestation..."
         />
         <input
           type="text"
