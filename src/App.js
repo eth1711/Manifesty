@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import SecretMessagesABI from './SecretMessagesABI.json'; // Import ABI
-import { JsonRpcProvider } from 'ethers';
-// import { Alchemy, Network } from "alchemy-sdk";
+// import { JsonRpcProvider } from 'ethers';
+import { Alchemy, Network } from "alchemy-sdk";
+import BN from 'bn.js';
 
 // Connect to the Scroll Sepolia network
-const provider = new JsonRpcProvider("https://scroll-sepolia.g.alchemy.com/v2/2T8Htx5cla3sOOMs1lp2Du3fzm7w3Sh_");
+// const provider = new JsonRpcProvider("https://scroll-sepolia.g.alchemy.com/v2/2T8Htx5cla3sOOMs1lp2Du3fzm7w3Sh_");
 
-// const settings = {
-//   apiKey: "2T8Htx5cla3sOOMs1lp2Du3fzm7w3Sh_",
-//   network: Network.SCROLL_SEPOLIA,
-// };
+const settings = {
+  apiKey: "2T8Htx5cla3sOOMs1lp2Du3fzm7w3Sh_",
+  network: Network.SCROLL_SEPOLIA,
+};
 
-// const alchemy = new Alchemy(settings);
+const alchemy = new Alchemy(settings);
 
 function App() {
   const [account, setAccount] = useState('');
@@ -47,11 +48,22 @@ function App() {
   const estimateGasFee = async () => {
     if (contract && message) {
       try {
-        // const estimatedGas = await contract.methods.sendMessage(message).estimateGas({ from: account });
-        const gasPrice = await provider.getBlock("latest");
-        // const totalFee = estimatedGas * gasPrice.toNumber(); // Calculate total gas fee
-        // setGasFee(Web3.utils.fromWei(totalFee.toString(), 'ether')); // Convert to ether
-        setGasFee(gasPrice); // Convert to ether
+        const estimatedGas = await contract.methods.sendMessage(message).estimateGas({ from: account });
+  
+        // Fetch the current fee data from Alchemy (supports EIP-1559)
+        const feeData = await alchemy.core.getFeeData(); // This returns baseFeePerGas, maxFeePerGas, and maxPriorityFeePerGas
+  
+        // Use the maxFeePerGas (to align with MetaMask's typical gas estimates)
+        const maxFeePerGas = feeData.maxFeePerGas; // This is the maximum gas price in Wei
+  
+        // Calculate total gas fee in Wei (estimatedGas * maxFeePerGas)
+        const totalFeeWei = new BN(estimatedGas.toString()).mul(new BN(maxFeePerGas.toString()));
+  
+        // Convert total fee from Wei to Ether
+        const totalFeeEther = Web3.utils.fromWei(totalFeeWei.toString(), 'ether');
+  
+        // Set the gas fee in Ether
+        setGasFee(totalFeeEther);
       } catch (error) {
         console.error("Error estimating gas fee:", error);
         setGasFee('Error'); // Show error message
@@ -60,6 +72,8 @@ function App() {
       setGasFee(''); // Reset gas fee if contract or message is not set
     }
   };
+  
+  
 
   const sendMessage = async () => {
     if (contract && message) {
